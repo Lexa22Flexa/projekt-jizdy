@@ -12,10 +12,10 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="grid.html">BBBB</a>
+          <a class="nav-link" href="#">BBBB</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="trailery.html">CCCC</a>
+          <a class="nav-link" href="#">CCCC</a>
         </li>
       </ul>
     </div>
