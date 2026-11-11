@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bootstrap": "^5.3.8",
+    "echarts": "^6.1.0",
+    "leaflet": "^1.9.4",
+    "qr-creator": "^1.0.0"
+  }
+}
