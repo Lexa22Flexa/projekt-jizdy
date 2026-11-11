@@ -27,11 +27,11 @@ class Database extends Config
     public array $default = [
         'DSN'          => '',
         'hostname'     => 'localhost',
-        'username'     => '',
+        'username'     => 'root',
         'password'     => '',
         'database'     => '',
         'DBDriver'     => 'MySQLi',
-        'DBPrefix'     => '',
+        'DBPrefix'     => 'jizdy_',
         'pConnect'     => false,
         'DBDebug'      => true,
         'charset'      => 'utf8mb4',
