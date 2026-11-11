@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Zakázané adresáře
+    RewriteRule ^(?:app|vendor|writable|tests)(?:/|$) - [F,L]
+
+    # Citlivé soubory
+    RewriteRule ^(?:\.env|composer\.(?:json|lock)|spark|phpunit\.xml.*)$ - [F,L]
+
+    # Po interním přepisu už public znovu nepřepisovat
+    RewriteRule ^public(?:/|$) - [L]
+
+    # Existující soubory a adresáře ponechat
+    # Výjimka: samotný kořen projektu
+    RewriteRule ^$ public/ [L]
+
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Ostatní požadavky interně do public
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
