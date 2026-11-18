@@ -14,7 +14,7 @@
     <section id="stats" class="card mb-4">
         <div class="card-body">
             <h2 class="h5 card-title">Počet odjezdů za zastávku</h2>
-            <p class="text-muted mb-3">Aktuální týden <?= esc($weekStart) ?>–<?= esc($weekEnd) ?></p>
+            <p class="text-muted mb-3">Aktuální týden <?= esc($weekStart) ?>-<?= esc($weekEnd) ?></p>
             <div id="weeklyDeparturesChart" style="width: 100%; height: 360px;" role="img" aria-label="Graf počtu odjezdů podle dnů týdne"></div>
         </div>
     </section>
@@ -33,6 +33,14 @@
           <label>Color: <input id="fill" type="color" value="#000"></label>
           <label>Background: <input id="background" type="color"><input id="transparent" type="checkbox" checked> transparent</label>
           <label>Size: <input id="size" type="range" value="250" step="10" min="20" max="1000"></label>
+        </div>
+    </section>
+
+    <section id="map-section" class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 card-title">Zastávky a nejbližší odjezdy</h2>
+            <p class="text-muted">Klikněte na značku zastávky pro zobrazení odjezdů.</p>
+            <div id="stops-map" style="width: 100%; height: 450px; border-radius: 0.375rem;"></div>
         </div>
     </section>
   </main>
@@ -83,7 +91,7 @@
     const weeklyDepartureCounts = <?= json_encode($departureCounts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
 
     if (typeof echarts === 'undefined') {
-      console.error('ECharts nebyl načten.');
+      console.error('ECharts nebyl načten. GG Alkane');
     } else {
       const chartElement = document.getElementById('weeklyDeparturesChart');
       const departuresChart = echarts.init(chartElement);
@@ -119,9 +127,9 @@
           type: 'bar',
           data: weeklyDepartureCounts,
           barMaxWidth: 48,
-          itemStyle: {
+            itemStyle: {
             borderRadius: [4, 4, 0, 0],
-            color: '#36a2eb'
+            color: '#A2E436' //zkusit ještě, ať to bere přímo z bootstrapu (zatím se nepovedlo D:)
           },
           label: {
             show: true,
@@ -132,6 +140,52 @@
 
       window.addEventListener('resize', () => departuresChart.resize());
     }
+  </script>
+
+  <script>
+    const stops = <?= json_encode($stops, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (typeof L === 'undefined') {
+        console.error('Leaflet nebyl načten. GG Alkane');
+        return;
+      }
+
+      const stopsMap = L.map('stops-map').setView([49.195, 16.604], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(stopsMap);
+
+      const bounds = [];
+
+      stops.forEach(function (stop) {
+        const departuresHtml = stop.departures
+          .map(function (departure) {
+            return '<li>' + departure + '</li>';
+          })
+          .join('');
+
+        const popupHtml = '<strong>' + stop.name + '</strong>'
+          + '<br><span>Nejbližší odjezdy:</span>'
+          + '<ul class="mb-0 mt-1">' + departuresHtml + '</ul>';
+
+        L.marker([stop.lat, stop.lng])
+          .addTo(stopsMap)
+          .bindPopup(popupHtml);
+
+        bounds.push([stop.lat, stop.lng]);
+      });
+
+      if (bounds.length > 0) {
+        stopsMap.fitBounds(bounds, { padding: [30, 30] });
+      }
+
+      setTimeout(function () {
+        stopsMap.invalidateSize();
+      }, 100);
+    });
   </script>
 
 <?= $this->endSection(); ?>
