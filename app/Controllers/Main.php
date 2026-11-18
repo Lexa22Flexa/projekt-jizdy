@@ -9,7 +9,16 @@ class Main extends BaseController
 {
     public function index()
     {
-        
-        return view("index.php");
+        $today = new \DateTimeImmutable('today');
+        $monday = $today->modify('monday this week');
+
+        //pak nahradit z db
+        $departureCounts = [18, 22, 20, 24, 21, 14, 8];
+
+        return view('index', [
+            'departureCounts' => $departureCounts,
+            'weekStart'       => $monday->format('d.m.Y'),
+            'weekEnd'         => $monday->modify('+6 days')->format('d.m.Y'),
+        ]);
     }
 }

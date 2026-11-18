@@ -5,15 +5,20 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section("content"); ?>
-
-<h1 class="mt-1 mb-2">Jízdy</h1> <!-- Celé předělat, aby to bylo na odkaz nynější stránky (ve finále odkaz na stránku s odjezdovou tabulí z dané zastávky) -->
+<body>
+  <h1 class="mt-1 mb-2">Jízdy</h1> <!-- Celé předělat, aby to bylo na odkaz nynější stránky (ve finále odkaz na stránku s odjezdovou tabulí z dané zastávky) -->
   <main>
-    <section>
-    </section>
     <section id="qr-code">
     </section>
-    <section id="stats">
+
+    <section id="stats" class="card mb-4">
+        <div class="card-body">
+            <h2 class="h5 card-title">Počet odjezdů za zastávku</h2>
+            <p class="text-muted mb-3">Aktuální týden <?= esc($weekStart) ?>–<?= esc($weekEnd) ?></p>
+            <div id="weeklyDeparturesChart" style="width: 100%; height: 360px;" role="img" aria-label="Graf počtu odjezdů podle dnů týdne"></div>
+        </div>
     </section>
+
     <section id="tools">
         <div style="display: none"> <!-- Spíš předělat -->
           <label>Text: <input id="text" type="text" value='<?=$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'] ?>'></label> <!-- Teoreticky je špatně(?) -->
@@ -31,8 +36,20 @@
         </div>
     </section>
   </main>
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
   <script type="module">
-    import QrCreator from 'https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.es6.min.js'; //předělat na tu stáhnutou
     let availableSettings = ['text', 'radius', 'ecLevel', 'fill', 'background', 'size'];
 
     function readSettings() {
@@ -60,6 +77,61 @@
     }
     renderQrCode();
 
+  </script>
+
+  <script>
+    const weeklyDepartureCounts = <?= json_encode($departureCounts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>;
+
+    if (typeof echarts === 'undefined') {
+      console.error('ECharts nebyl načten.');
+    } else {
+      const chartElement = document.getElementById('weeklyDeparturesChart');
+      const departuresChart = echarts.init(chartElement);
+
+      departuresChart.setOption({
+        title: {
+          text: 'Počet odjezdů',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: { type: 'shadow' },
+          formatter: '{b}: {c} odjezdů'
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: ['Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota', 'Neděle'],
+          axisLabel: { interval: 0 }
+        },
+        yAxis: {
+          type: 'value',
+          minInterval: 1,
+          name: 'Počet spojů'
+        },
+        series: [{
+          name: 'Odjezdy',
+          type: 'bar',
+          data: weeklyDepartureCounts,
+          barMaxWidth: 48,
+          itemStyle: {
+            borderRadius: [4, 4, 0, 0],
+            color: '#36a2eb'
+          },
+          label: {
+            show: true,
+            position: 'top'
+          }
+        }]
+      });
+
+      window.addEventListener('resize', () => departuresChart.resize());
+    }
   </script>
 
 <?= $this->endSection(); ?>
